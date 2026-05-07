@@ -6,12 +6,13 @@ import { useTheme } from '@/components/ThemeProvider';
 import { Sun, Moon, Menu, X, Search, Rss } from 'lucide-react';
 
 const navLinks = [
-  { label: 'Home', href: '/' },
-  { label: 'Technology', href: '/category/technology' },
-  { label: 'Design', href: '/category/design' },
-  { label: 'Business', href: '/category/business' },
-  { label: 'Science', href: '/category/science' },
-  { label: 'Culture', href: '/category/culture' },
+  { label: 'Latest', href: '/' },
+  { label: 'Scholarship', href: '/category/scholarship' },
+  { label: 'Sport', href: '/category/sport' },
+  { label: 'Media', href: '/category/media' },
+  { label: 'Fashion', href: '/category/fashion' },
+  { label: 'Politics', href: '/category/politics' },
+  { label: 'Others', href: '/category/others' },
 ];
 
 export default function Navbar() {
@@ -45,7 +46,7 @@ export default function Navbar() {
                 className="w-8 h-8 rounded-full flex items-center justify-center font-serif font-bold text-sm text-white"
                 style={{ background: 'var(--accent)' }}
               >
-                t.a
+                T.a
               </div>
               <span
                 className="font-serif text-xl font-bold tracking-tight hidden sm:block"

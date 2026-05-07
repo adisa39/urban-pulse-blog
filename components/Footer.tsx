@@ -5,7 +5,7 @@ import { Rss, Mail, ArrowRight } from 'lucide-react';
 import { TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/SocialIcons';
 import { useState } from 'react';
 
-const categories = ['Technology', 'Design', 'Business', 'Science', 'Culture'];
+const categories = ['Latest', 'Scholarship', 'Sport', 'Media', 'Politics'];
 const quickLinks = [
   { label: 'About', href: '/about' },
   { label: 'Write for Us', href: '/write' },
