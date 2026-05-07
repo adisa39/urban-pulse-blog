@@ -66,7 +66,7 @@ export default function Footer() {
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 rounded-full flex items-center justify-center font-serif font-bold text-sm text-white" style={{ background: 'var(--accent)' }}>M</div>
-              <span className="font-serif text-lg font-bold" style={{ color: 'var(--text-primary)' }}>The Meridian</span>
+              <span className="font-serif text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Trend Axis</span>
             </div>
             <p className="text-sm leading-relaxed mb-5" style={{ color: 'var(--text-muted)' }}>
               Thoughtful writing on technology, design, business, science and culture. Independent journalism since 2024.
@@ -151,7 +151,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3" style={{ borderTop: '1px solid var(--border)' }}>
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-            © {new Date().getFullYear()} The Meridian. All rights reserved.
+            © {new Date().getFullYear()} Trend Axis. All rights reserved.
           </p>
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
             Built with Next.js & TypeScript

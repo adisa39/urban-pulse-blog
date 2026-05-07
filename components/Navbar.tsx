@@ -45,13 +45,13 @@ export default function Navbar() {
                 className="w-8 h-8 rounded-full flex items-center justify-center font-serif font-bold text-sm text-white"
                 style={{ background: 'var(--accent)' }}
               >
-                M
+                t.a
               </div>
               <span
                 className="font-serif text-xl font-bold tracking-tight hidden sm:block"
                 style={{ color: 'var(--text-primary)' }}
               >
-                The Meridian
+                Trend Axis
               </span>
             </Link>
 
@@ -132,12 +132,12 @@ export default function Navbar() {
               </button>
 
               {/* Admin */}
-              <Link
+              {/* <Link
                 href="/admin"
                 className="btn-primary hidden sm:inline-flex py-1.5 px-3 text-sm"
               >
                 Admin
-              </Link>
+              </Link> */}
 
               {/* Mobile hamburger */}
               <button
@@ -155,7 +155,7 @@ export default function Navbar() {
       {/* Mobile menu */}
       <div className={`mobile-menu ${mobileOpen ? 'open' : ''}`}>
         <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: 'var(--border)' }}>
-          <span className="font-serif text-xl font-bold" style={{ color: 'var(--text-primary)' }}>The Meridian</span>
+          <span className="font-serif text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Trend Axis</span>
           <button onClick={() => setMobileOpen(false)} style={{ color: 'var(--text-muted)' }}>
             <X size={24} />
           </button>
@@ -171,11 +171,11 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
+          {/* <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
             <Link href="/admin" onClick={() => setMobileOpen(false)} className="btn-primary w-full justify-center">
               Admin Dashboard
             </Link>
-          </div>
+          </div> */}
         </div>
       </div>
     </>
