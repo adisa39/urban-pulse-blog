@@ -17,6 +17,7 @@ build/
 
 # prisma
 prisma/*.db
+prisma.config.ts
 
 # misc
 .DS_Store
