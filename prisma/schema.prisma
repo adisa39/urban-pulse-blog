@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String
+  avatar        String?
+  bio           String?
+  role          Role      @default(AUTHOR)
+  twitterHandle String?
+  linkedinUrl   String?
+  githubUrl     String?
+  posts         Post[]
+  sessions      Session[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Post {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  excerpt         String
+  content         String   @db.Text
+  coverImage      String
+  category        String
+  tags            Tag[]
+  authorId        String
+  author          User     @relation(fields: [authorId], references: [id])
+  published       Boolean  @default(false)
+  featured        Boolean  @default(false)
+  views           Int      @default(0)
+  readTime        Int      @default(1)
+  metaDescription String?
+  publishedAt     DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+
+  @@index([slug])
+  @@index([category])
+  @@index([published])
+  @@index([featured])
+}
+
+model Tag {
+  id    String @id @default(cuid())
+  name  String @unique
+  posts Post[]
+}
+
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String @db.Text
+}
+
+model Subscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  ADMIN
+  AUTHOR
+  EDITOR
+}

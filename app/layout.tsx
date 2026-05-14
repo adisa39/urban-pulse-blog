@@ -3,10 +3,10 @@ import './globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
 
 export const metadata: Metadata = {
-  title: 'The Meridian | Modern Blog',
+  title: 'Trend Axis | Modern Blog',
   description: 'Thoughtful writing on technology, design, business, science and culture.',
   openGraph: {
-    siteName: 'The Meridian',
+    siteName: 'Trend Axis',
     type: 'website',
   },
   twitter: {

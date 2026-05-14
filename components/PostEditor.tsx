@@ -2,251 +2,217 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Post } from '@/types';
-import { Save, Eye, Star, Upload, AlertCircle, Check } from 'lucide-react';
+import Image from 'next/image';
+import { ApiPost, createPost, updatePost } from '@/lib/hooks';
+import { Save, Eye, X, Plus, AlertCircle, CheckCircle, Loader } from 'lucide-react';
 
 interface PostEditorProps {
-  initial?: Partial<Post>;
-  mode: 'create' | 'edit';
+  initial?: Partial<ApiPost>;
   postId?: string;
+  mode: 'create' | 'edit';
 }
 
-const categories = ['Technology', 'Design', 'Business', 'Science', 'Culture'];
+const CATEGORIES = ['Technology', 'Design', 'Business', 'Science', 'Culture'];
+const DEFAULT_COVER = 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&h=630&fit=crop';
 
-export default function PostEditor({ initial, mode, postId }: PostEditorProps) {
+export default function PostEditor({ initial, postId, mode }: PostEditorProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState('');
+  const [status, setStatus] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
+  const [tagInput, setTagInput] = useState('');
 
   const [form, setForm] = useState({
-    title: initial?.title || '',
-    excerpt: initial?.excerpt || '',
-    content: initial?.content || '',
-    coverImage: initial?.coverImage || '',
-    category: initial?.category || 'Technology',
-    tags: initial?.tags?.join(', ') || '',
-    featured: initial?.featured || false,
-    published: initial?.published !== false,
+    title:           initial?.title || '',
+    excerpt:         initial?.excerpt || '',
+    content:         initial?.content || '',
+    coverImage:      initial?.coverImage || DEFAULT_COVER,
+    category:        initial?.category || 'Technology',
+    tags:            (initial?.tags?.map(t => t.name) || []) as string[],
+    published:       initial?.published ?? false,
+    featured:        initial?.featured ?? false,
     metaDescription: initial?.metaDescription || '',
-    metaKeywords: initial?.metaKeywords?.join(', ') || '',
-    readTime: initial?.readTime || 5,
   });
 
-  const set = (key: string, val: unknown) => setForm(f => ({ ...f, [key]: val }));
+  const update = (field: string, value: unknown) =>
+    setForm(prev => ({ ...prev, [field]: value }));
 
-  const handleSave = async (publishNow?: boolean) => {
-    if (!form.title.trim()) { setError('Title is required'); return; }
-    if (!form.content.trim()) { setError('Content is required'); return; }
-    setError('');
+  const addTag = () => {
+    const tag = tagInput.trim();
+    if (tag && !form.tags.includes(tag)) update('tags', [...form.tags, tag]);
+    setTagInput('');
+  };
+
+  const removeTag = (tag: string) => update('tags', form.tags.filter(t => t !== tag));
+
+  const wordCount = form.content.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length;
+  const readTime = Math.max(1, Math.ceil(wordCount / 200));
+
+  const handleSave = async (publishOverride?: boolean) => {
+    if (!form.title.trim()) { setStatus({ type: 'error', msg: 'Title is required.' }); return; }
+    if (!form.content.trim()) { setStatus({ type: 'error', msg: 'Content is required.' }); return; }
+
     setSaving(true);
+    setStatus(null);
 
     const payload = {
       ...form,
-      tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
-      metaKeywords: form.metaKeywords.split(',').map(t => t.trim()).filter(Boolean),
-      published: publishNow !== undefined ? publishNow : form.published,
-      readTime: Math.ceil(form.content.split(' ').length / 200) || form.readTime,
+      published: publishOverride !== undefined ? publishOverride : form.published,
+      metaDescription: form.metaDescription || form.excerpt,
     };
 
     try {
-      const url = mode === 'create' ? '/api/posts' : `/api/posts/${postId}`;
-      const method = mode === 'create' ? 'POST' : 'PUT';
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) throw new Error('Save failed');
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
-      if (mode === 'create') router.push('/admin/posts');
-    } catch {
-      setError('Failed to save. Please try again.');
+      if (mode === 'create') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await createPost(payload as any);
+        setStatus({ type: 'success', msg: 'Post created successfully!' });
+        setTimeout(() => router.push('/admin/posts'), 1200);
+      } else if (postId) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await updatePost(postId, payload as any);
+        setStatus({ type: 'success', msg: 'Post saved.' });
+        update('published', payload.published);
+      }
+    } catch (e) {
+      setStatus({ type: 'error', msg: e instanceof Error ? e.message : 'Something went wrong.' });
     } finally {
       setSaving(false);
     }
   };
 
-  const wordCount = form.content.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length;
-  const estimatedRead = Math.ceil(wordCount / 200);
-
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div className="max-w-5xl">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="font-serif text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
             {mode === 'create' ? 'New Post' : 'Edit Post'}
           </h1>
           <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-            {wordCount} words · ~{estimatedRead} min read
+            {mode === 'create' ? 'Create a new article for your blog.' : `Last saved: ${initial?.updatedAt ? new Date(initial.updatedAt).toLocaleString() : '—'}`}
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          {error && (
-            <span className="flex items-center gap-1 text-sm text-red-500">
-              <AlertCircle size={14} /> {error}
-            </span>
+        <div className="flex items-center gap-2">
+          {form.published && mode === 'edit' && initial?.slug && (
+            <a href={`/blog/${initial.slug}`} target="_blank" rel="noopener noreferrer" className="btn-secondary py-1.5 px-3 text-sm">
+              <Eye size={14} /> Preview
+            </a>
           )}
-          {saved && (
-            <span className="flex items-center gap-1 text-sm" style={{ color: '#10b981' }}>
-              <Check size={14} /> Saved!
-            </span>
-          )}
-          <button
-            onClick={() => handleSave(false)}
-            disabled={saving}
-            className="btn-secondary"
-          >
-            Save Draft
+          <button onClick={() => handleSave(false)} disabled={saving} className="btn-secondary py-1.5 px-3 text-sm">
+            {saving ? <Loader size={13} className="animate-spin" /> : null} Save Draft
           </button>
-          <button
-            onClick={() => handleSave(true)}
-            disabled={saving}
-            className="btn-primary"
-          >
-            <Save size={15} />
-            {saving ? 'Saving…' : 'Publish'}
+          <button onClick={() => handleSave(true)} disabled={saving} className="btn-primary py-1.5 px-3 text-sm">
+            {saving ? <Loader size={13} className="animate-spin" /> : <Save size={14} />}
+            {form.published ? 'Update' : 'Publish'}
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main content */}
+      {status && (
+        <div className="flex items-center gap-2 p-3 rounded-xl mb-6 text-sm font-medium animate-fade-in-up" style={{
+          background: status.type === 'success' ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)',
+          color: status.type === 'success' ? '#059669' : '#dc2626',
+          border: `1px solid ${status.type === 'success' ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.25)'}`,
+        }}>
+          {status.type === 'success' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+          {status.msg}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main */}
         <div className="lg:col-span-2 space-y-5">
-          {/* Title */}
-          <div className="card p-5">
-            <label className="form-label">Post Title *</label>
-            <input
-              type="text"
-              value={form.title}
-              onChange={e => set('title', e.target.value)}
-              placeholder="An Intriguing, Click-worthy Title…"
-              className="form-input text-lg font-serif"
-            />
+          <div>
+            <label className="form-label">Title *</label>
+            <input type="text" value={form.title} onChange={e => update('title', e.target.value)} placeholder="Write a compelling headline…" className="form-input text-lg font-serif" />
           </div>
 
-          {/* Excerpt */}
-          <div className="card p-5">
-            <label className="form-label">Excerpt / Subtitle</label>
-            <textarea
-              value={form.excerpt}
-              onChange={e => set('excerpt', e.target.value)}
-              placeholder="A compelling one-to-two sentence summary that appears in cards and previews…"
-              rows={3}
-              className="form-input resize-none"
-            />
-            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{form.excerpt.length}/200 characters</p>
+          <div>
+            <label className="form-label">Excerpt</label>
+            <textarea value={form.excerpt} onChange={e => update('excerpt', e.target.value)} placeholder="A 1–2 sentence summary shown in article cards and social previews…" rows={3} className="form-input resize-none" />
+            <p className="text-xs mt-1" style={{ color: form.excerpt.length > 200 ? '#ef4444' : 'var(--text-muted)' }}>{form.excerpt.length}/200</p>
           </div>
 
-          {/* Cover image */}
-          <div className="card p-5">
+          <div>
             <label className="form-label">Cover Image URL</label>
-            <div className="flex gap-2">
-              <input
-                type="url"
-                value={form.coverImage}
-                onChange={e => set('coverImage', e.target.value)}
-                placeholder="https://images.unsplash.com/photo-…"
-                className="form-input"
-              />
-              <button className="btn-secondary flex-shrink-0">
-                <Upload size={14} /> Browse
-              </button>
-            </div>
+            <input type="url" value={form.coverImage} onChange={e => update('coverImage', e.target.value)} placeholder="https://images.unsplash.com/…" className="form-input" />
             {form.coverImage && (
-              <div className="mt-3 rounded-xl overflow-hidden" style={{ height: 160 }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={form.coverImage} alt="Cover preview" className="w-full h-full object-cover" />
+              <div className="mt-2 relative overflow-hidden rounded-xl" style={{ height: 160 }}>
+                <Image src={form.coverImage} alt="Cover preview" fill className="object-cover" unoptimized onError={() => update('coverImage', DEFAULT_COVER)} />
               </div>
             )}
           </div>
 
-          {/* Content */}
-          <div className="card p-5">
-            <div className="flex items-center justify-between mb-2">
+          <div>
+            <div className="flex items-center justify-between mb-1">
               <label className="form-label mb-0">Content (HTML) *</label>
-              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>HTML supported</span>
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{wordCount} words · ~{readTime} min read</span>
             </div>
             <textarea
               value={form.content}
-              onChange={e => set('content', e.target.value)}
-              placeholder="<h2>Introduction</h2>&#10;<p>Your article content here…</p>"
-              rows={20}
-              className="form-input resize-y font-mono text-sm"
-              style={{ lineHeight: 1.6 }}
+              onChange={e => update('content', e.target.value)}
+              placeholder={'<h2>Introduction</h2>\n<p>Start writing your article here…</p>\n<blockquote>A memorable quote.</blockquote>'}
+              rows={22}
+              className="form-input resize-y"
+              style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.82rem', lineHeight: 1.7 }}
             />
-            <div className="flex gap-4 mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>
-              <span>{wordCount} words</span>
-              <span>~{estimatedRead} min read</span>
-              <span>{form.content.length} chars</span>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Supports: &lt;h2&gt; &lt;h3&gt; &lt;p&gt; &lt;blockquote&gt; &lt;ul&gt; &lt;ol&gt; &lt;li&gt; &lt;code&gt; &lt;pre&gt; &lt;a&gt; &lt;strong&gt; &lt;em&gt;</p>
+          </div>
+
+          {/* SEO */}
+          <div className="p-5 rounded-2xl space-y-4" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+            <h3 className="font-serif font-bold" style={{ color: 'var(--text-primary)' }}>SEO</h3>
+            <div>
+              <label className="form-label">Meta Description</label>
+              <textarea value={form.metaDescription} onChange={e => update('metaDescription', e.target.value)} placeholder="Description for search results (150–160 chars)…" rows={2} className="form-input resize-none text-sm" />
+              <p className="text-xs mt-1" style={{ color: form.metaDescription.length > 160 ? '#ef4444' : 'var(--text-muted)' }}>{form.metaDescription.length}/160</p>
             </div>
+            {form.title && (
+              <div className="p-3 rounded-xl text-sm" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)' }}>
+                <p className="text-xs font-semibold mb-2" style={{ color: 'var(--text-muted)' }}>Search preview</p>
+                <p className="font-medium text-blue-600 dark:text-blue-400 truncate">{form.title}</p>
+                <p className="text-xs text-green-700 dark:text-green-500">meridian.blog › blog › {form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').substring(0, 40)}</p>
+                <p className="text-xs mt-0.5 line-clamp-2" style={{ color: 'var(--text-muted)' }}>{form.metaDescription || form.excerpt || 'No description set.'}</p>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Sidebar settings */}
+        {/* Sidebar */}
         <div className="space-y-5">
-          {/* Status */}
+          {/* Publish */}
           <div className="card p-5">
-            <h3 className="font-semibold text-sm mb-4" style={{ color: 'var(--text-primary)' }}>Publication</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Published</p>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Visible to all readers</p>
+            <h3 className="font-serif font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Publishing</h3>
+            <div className="space-y-3">
+              {[
+                { label: 'Published', desc: 'Visible to all readers', field: 'published' },
+                { label: 'Featured', desc: 'Show in hero section', field: 'featured' },
+              ].map(({ label, desc, field }) => (
+                <div key={field} className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{label}</p>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{desc}</p>
+                  </div>
+                  <label className="toggle">
+                    <input type="checkbox" checked={form[field as keyof typeof form] as boolean} onChange={e => update(field, e.target.checked)} />
+                    <span className="toggle-slider" />
+                  </label>
                 </div>
-                <label className="toggle">
-                  <input type="checkbox" checked={form.published} onChange={e => set('published', e.target.checked)} />
-                  <span className="toggle-slider" />
-                </label>
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium flex items-center gap-1" style={{ color: 'var(--text-primary)' }}>
-                    <Star size={13} style={{ color: '#f59e0b' }} /> Featured
-                  </p>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Highlight on homepage</p>
-                </div>
-                <label className="toggle">
-                  <input type="checkbox" checked={form.featured} onChange={e => set('featured', e.target.checked)} />
-                  <span className="toggle-slider" />
-                </label>
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-2">
-              <button onClick={() => handleSave()} disabled={saving} className="btn-primary w-full justify-center">
-                <Save size={14} /> {saving ? 'Saving…' : 'Save Changes'}
-              </button>
-              {form.published && form.title && (
-                <a
-                  href={`/blog/${form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-secondary w-full justify-center"
-                >
-                  <Eye size={14} /> Preview
-                </a>
-              )}
+              ))}
             </div>
           </div>
 
           {/* Category */}
           <div className="card p-5">
-            <label className="form-label">Category</label>
-            <div className="grid grid-cols-2 gap-2 mt-1">
-              {categories.map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => set('category', cat)}
-                  className="px-3 py-2 rounded-lg text-xs font-semibold text-center transition-all border"
+            <h3 className="font-serif font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>Category</h3>
+            <div className="space-y-1.5">
+              {CATEGORIES.map(cat => (
+                <button key={cat} type="button" onClick={() => update('category', cat)}
+                  className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-all"
                   style={{
-                    background: form.category === cat ? 'var(--accent)' : 'var(--bg-secondary)',
+                    background: form.category === cat ? 'var(--accent)' : 'var(--accent-light)',
                     color: form.category === cat ? '#fff' : 'var(--text-secondary)',
-                    borderColor: form.category === cat ? 'var(--accent)' : 'var(--border)',
-                  }}
-                >
+                    border: form.category === cat ? 'none' : '1px solid var(--border)',
+                  }}>
                   {cat}
                 </button>
               ))}
@@ -255,66 +221,55 @@ export default function PostEditor({ initial, mode, postId }: PostEditorProps) {
 
           {/* Tags */}
           <div className="card p-5">
-            <label className="form-label">Tags</label>
-            <input
-              type="text"
-              value={form.tags}
-              onChange={e => set('tags', e.target.value)}
-              placeholder="AI, Design, Technology"
-              className="form-input"
-            />
-            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Comma-separated</p>
-            {form.tags && (
-              <div className="flex flex-wrap gap-1.5 mt-3">
-                {form.tags.split(',').map(t => t.trim()).filter(Boolean).map(t => (
-                  <span key={t} className="tag">{t}</span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* SEO */}
-          <div className="card p-5">
-            <h3 className="font-semibold text-sm mb-4" style={{ color: 'var(--text-primary)' }}>SEO Settings</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="form-label">Meta Description</label>
-                <textarea
-                  value={form.metaDescription}
-                  onChange={e => set('metaDescription', e.target.value)}
-                  placeholder="Describe this article for search engines…"
-                  rows={3}
-                  className="form-input resize-none text-sm"
-                />
-                <div className="flex justify-between text-xs mt-1" style={{ color: form.metaDescription.length > 160 ? '#dc2626' : 'var(--text-muted)' }}>
-                  <span>{form.metaDescription.length}/160</span>
-                  {form.metaDescription.length > 0 && form.metaDescription.length <= 160 && <span style={{ color: '#10b981' }}>✓ Good length</span>}
-                </div>
-              </div>
-              <div>
-                <label className="form-label">Meta Keywords</label>
-                <input
-                  type="text"
-                  value={form.metaKeywords}
-                  onChange={e => set('metaKeywords', e.target.value)}
-                  placeholder="seo, keywords, comma-separated"
-                  className="form-input text-sm"
-                />
-              </div>
-              <div>
-                <label className="form-label">Read Time (minutes)</label>
-                <input
-                  type="number"
-                  value={form.readTime}
-                  onChange={e => set('readTime', parseInt(e.target.value) || 5)}
-                  min={1}
-                  max={60}
-                  className="form-input"
-                />
-                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Auto-calculated: ~{estimatedRead} min</p>
-              </div>
+            <h3 className="font-serif font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>Tags</h3>
+            <div className="flex gap-2 mb-3">
+              <input
+                type="text" value={tagInput}
+                onChange={e => setTagInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }}
+                placeholder="Add tag…"
+                className="form-input flex-1 text-sm py-1.5"
+              />
+              <button type="button" onClick={addTag} className="btn-secondary py-1.5 px-3">
+                <Plus size={14} />
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {form.tags.map(tag => (
+                <span key={tag} className="tag flex items-center gap-1">
+                  {tag}
+                  <button type="button" onClick={() => removeTag(tag)} className="hover:text-red-500 transition-colors ml-0.5">
+                    <X size={10} />
+                  </button>
+                </span>
+              ))}
+              {form.tags.length === 0 && <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Press Enter to add tags</p>}
             </div>
           </div>
+
+          {/* Stats */}
+          <div className="card p-5">
+            <h3 className="font-serif font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>Content</h3>
+            {[
+              { label: 'Words', value: wordCount.toLocaleString() },
+              { label: 'Est. read time', value: `${readTime} min` },
+              { label: 'Characters', value: form.content.replace(/<[^>]*>/g, '').length.toLocaleString() },
+            ].map(({ label, value }) => (
+              <div key={label} className="flex items-center justify-between text-sm py-1.5" style={{ borderBottom: '1px solid var(--border)' }}>
+                <span style={{ color: 'var(--text-muted)' }}>{label}</span>
+                <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>{value}</span>
+              </div>
+            ))}
+          </div>
+
+          {mode === 'edit' && (
+            <button
+              onClick={() => { if (confirm('Delete this post? This cannot be undone.')) { fetch(`/api/posts/${postId}`, { method: 'DELETE' }).then(() => router.push('/admin/posts')); } }}
+              className="btn-danger w-full justify-center"
+            >
+              Delete Post
+            </button>
+          )}
         </div>
       </div>
     </div>

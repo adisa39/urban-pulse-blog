@@ -4,15 +4,15 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useTheme } from '@/components/ThemeProvider';
 import { Sun, Moon, Menu, X, Search, Rss } from 'lucide-react';
+import Image from 'next/image';
 
 const navLinks = [
-  { label: 'Latest', href: '/' },
-  { label: 'Scholarship', href: '/category/scholarship' },
-  { label: 'Sport', href: '/category/sport' },
-  { label: 'Media', href: '/category/media' },
-  { label: 'Fashion', href: '/category/fashion' },
-  { label: 'Politics', href: '/category/politics' },
-  { label: 'Others', href: '/category/others' },
+  { label: 'Home', href: '/' },
+  { label: 'Technology', href: '/category/technology' },
+  { label: 'Design', href: '/category/design' },
+  { label: 'Business', href: '/category/business' },
+  { label: 'Science', href: '/category/science' },
+  { label: 'Culture', href: '/category/culture' },
 ];
 
 export default function Navbar() {
@@ -43,10 +43,17 @@ export default function Navbar() {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 group">
               <div
-                className="w-8 h-8 rounded-full flex items-center justify-center font-serif font-bold text-sm text-white"
-                style={{ background: 'var(--accent)' }}
+                className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
+                style={{ background: 'white' }}
               >
-                T.a
+                <Image
+                  src="/logo.png"
+                  alt="Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain w-full h-full p-0.5"
+                  priority
+                />
               </div>
               <span
                 className="font-serif text-xl font-bold tracking-tight hidden sm:block"
@@ -133,12 +140,12 @@ export default function Navbar() {
               </button>
 
               {/* Admin */}
-              {/* <Link
+              <Link
                 href="/admin"
                 className="btn-primary hidden sm:inline-flex py-1.5 px-3 text-sm"
               >
                 Admin
-              </Link> */}
+              </Link>
 
               {/* Mobile hamburger */}
               <button
@@ -172,11 +179,11 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          {/* <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
+          <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
             <Link href="/admin" onClick={() => setMobileOpen(false)} className="btn-primary w-full justify-center">
               Admin Dashboard
             </Link>
-          </div> */}
+          </div>
         </div>
       </div>
     </>

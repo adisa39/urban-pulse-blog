@@ -1,7 +1,7 @@
 'use client';
 
 interface AdSpaceProps {
-  variant?: 'leaderboard' | 'rectangle' | 'sidebar' | 'banner' | 'square';
+  variant?: 'leaderboard' | 'rectangle' | 'sidebar' | 'banner' | 'square' | 'skyscraper';
   label?: string;
 }
 
@@ -9,6 +9,7 @@ const adSizes: Record<string, { width: string; height: string; label: string }> 
   leaderboard: { width: '100%', height: '90px', label: '728 × 90 — Leaderboard' },
   rectangle:   { width: '100%', height: '250px', label: '300 × 250 — Medium Rectangle' },
   sidebar:     { width: '100%', height: '600px', label: '160 × 600 — Wide Skyscraper' },
+  skyscraper:  { width: '100%', height: '600px', label: '160 × 600 — Skyscraper' },
   banner:      { width: '100%', height: '60px', label: '468 × 60 — Banner' },
   square:      { width: '100%', height: '250px', label: '250 × 250 — Square' },
 };

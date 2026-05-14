@@ -1,42 +1,100 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { updatePost, deletePost, getPostBySlug, getPosts } from '@/lib/store';
+import { NextRequest } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { ok, err, requireAdmin, slugify, estimateReadTime } from '@/lib/api';
 
-type RouteContext = { params: Promise<{ id: string }> };
+type Ctx = { params: Promise<{ id: string }> };
 
-export async function GET(_request: NextRequest, context: RouteContext) {
-  const { id } = await context.params;
-  const post = getPosts(false).find(p => p.id === id) || getPostBySlug(id);
-  if (!post) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  return NextResponse.json(post);
-}
+const postInclude = {
+  author: { select: { id: true, name: true, avatar: true, bio: true, twitterHandle: true, linkedinUrl: true, githubUrl: true } },
+  tags: { select: { id: true, name: true } },
+};
 
-export async function PUT(request: NextRequest, context: RouteContext) {
-  const { id } = await context.params;
+export async function GET(_req: NextRequest, ctx: Ctx) {
+  const { id } = await ctx.params;
   try {
-    const body = await request.json();
-    const updated = updatePost(id, body);
-    if (!updated) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    return NextResponse.json(updated);
-  } catch {
-    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+    const post = await prisma.post.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+      include: postInclude,
+    });
+    if (!post) return err('Post not found', 404);
+    return ok(post);
+  } catch (e) {
+    console.error(e);
+    return err('Server error', 500);
   }
 }
 
-export async function PATCH(request: NextRequest, context: RouteContext) {
-  const { id } = await context.params;
+export async function PUT(request: NextRequest, ctx: Ctx) {
+  const { id } = await ctx.params;
+  const { response } = await requireAdmin();
+  if (response) return response;
+
   try {
     const body = await request.json();
-    const updated = updatePost(id, body);
-    if (!updated) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    return NextResponse.json(updated);
-  } catch {
-    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+    const { title, excerpt, content, coverImage, category, tags, published, featured, metaDescription } = body;
+
+    // Handle tag updates
+    let tagConnect: { id: string }[] | undefined;
+    if (Array.isArray(tags)) {
+      const tagRecords = await Promise.all(
+        tags.map((name: string) =>
+          prisma.tag.upsert({ where: { name }, update: {}, create: { name } })
+        )
+      );
+      tagConnect = tagRecords.map(t => ({ id: t.id }));
+    }
+
+    const data: Record<string, unknown> = {};
+    if (title !== undefined) { data.title = title; data.slug = slugify(title); }
+    if (excerpt !== undefined) data.excerpt = excerpt;
+    if (content !== undefined) { data.content = content; data.readTime = estimateReadTime(content); }
+    if (coverImage !== undefined) data.coverImage = coverImage;
+    if (category !== undefined) data.category = category;
+    if (published !== undefined) data.published = published;
+    if (featured !== undefined) data.featured = featured;
+    if (metaDescription !== undefined) data.metaDescription = metaDescription;
+
+    const post = await prisma.post.update({
+      where: { id },
+      data: {
+        ...data,
+        ...(tagConnect ? { tags: { set: [], connect: tagConnect } } : {}),
+      },
+      include: postInclude,
+    });
+
+    return ok(post);
+  } catch (e) {
+    console.error(e);
+    return err('Server error', 500);
   }
 }
 
-export async function DELETE(_request: NextRequest, context: RouteContext) {
-  const { id } = await context.params;
-  const success = deletePost(id);
-  if (!success) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  return NextResponse.json({ success: true });
+export async function PATCH(request: NextRequest, ctx: Ctx) {
+  const { id } = await ctx.params;
+  const { response } = await requireAdmin();
+  if (response) return response;
+
+  try {
+    const body = await request.json();
+    const post = await prisma.post.update({ where: { id }, data: body, include: postInclude });
+    return ok(post);
+  } catch (e) {
+    console.error(e);
+    return err('Server error', 500);
+  }
+}
+
+export async function DELETE(_req: NextRequest, ctx: Ctx) {
+  const { id } = await ctx.params;
+  const { response } = await requireAdmin();
+  if (response) return response;
+
+  try {
+    await prisma.post.delete({ where: { id } });
+    return ok({ success: true });
+  } catch (e) {
+    console.error(e);
+    return err('Server error', 500);
+  }
 }

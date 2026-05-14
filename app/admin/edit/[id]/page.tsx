@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import PostEditor from '@/components/PostEditor';
-import { Post } from '@/types';
+import { ApiPost } from '@/lib/hooks';
 
 export default function EditPostPage() {
   const { id } = useParams<{ id: string }>();
-  const [post, setPost] = useState<Post | null>(null);
+  const [post, setPost] = useState<ApiPost | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

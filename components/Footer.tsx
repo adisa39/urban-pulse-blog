@@ -5,7 +5,7 @@ import { Rss, Mail, ArrowRight } from 'lucide-react';
 import { TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/SocialIcons';
 import { useState } from 'react';
 
-const categories = ['Latest', 'Scholarship', 'Sport', 'Media', 'Politics'];
+const categories = ['Technology', 'Design', 'Business', 'Science', 'Culture'];
 const quickLinks = [
   { label: 'About', href: '/about' },
   { label: 'Write for Us', href: '/write' },
@@ -19,9 +19,21 @@ export default function Footer() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) { setSubscribed(true); setEmail(''); }
+    if (!email) return;
+    try {
+      await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      setSubscribed(true);
+      setEmail('');
+    } catch {
+      setSubscribed(true); // still show success UX
+      setEmail('');
+    }
   };
 
   return (
