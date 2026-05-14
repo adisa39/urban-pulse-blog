@@ -7,12 +7,13 @@ import { Sun, Moon, Menu, X, Search, Rss } from 'lucide-react';
 import Image from 'next/image';
 
 const navLinks = [
-  { label: 'Home', href: '/' },
-  { label: 'Technology', href: '/category/technology' },
-  { label: 'Design', href: '/category/design' },
-  { label: 'Business', href: '/category/business' },
-  { label: 'Science', href: '/category/science' },
-  { label: 'Culture', href: '/category/culture' },
+  { label: 'News', href: '/' },
+  { label: 'Scholarship', href: '/category/scholarship' },
+  { label: 'Sport', href: '/category/sport' },
+  { label: 'Entertainment', href: '/category/entertainment' },
+  { label: 'Jobs', href: '/category/jobs' },
+  { label: 'Politics', href: '/category/politics' },
+  { label: 'others', href: '/category/others' },
 ];
 
 export default function Navbar() {
@@ -139,14 +140,6 @@ export default function Navbar() {
                 {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
               </button>
 
-              {/* Admin */}
-              <Link
-                href="/admin"
-                className="btn-primary hidden sm:inline-flex py-1.5 px-3 text-sm"
-              >
-                Admin
-              </Link>
-
               {/* Mobile hamburger */}
               <button
                 className="p-2 lg:hidden"
@@ -179,11 +172,6 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
-            <Link href="/admin" onClick={() => setMobileOpen(false)} className="btn-primary w-full justify-center">
-              Admin Dashboard
-            </Link>
-          </div>
         </div>
       </div>
     </>
