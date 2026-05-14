@@ -12,7 +12,7 @@ interface PostEditorProps {
   mode: 'create' | 'edit';
 }
 
-const CATEGORIES = ['Technology', 'Design', 'Business', 'Science', 'Culture'];
+const CATEGORIES = ['News', 'Scholarship', 'Sport', 'Entertainment', 'Jobs', 'Politics', 'Others'] as const;
 const DEFAULT_COVER = 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&h=630&fit=crop';
 
 export default function PostEditor({ initial, postId, mode }: PostEditorProps) {
@@ -26,7 +26,7 @@ export default function PostEditor({ initial, postId, mode }: PostEditorProps) {
     excerpt:         initial?.excerpt || '',
     content:         initial?.content || '',
     coverImage:      initial?.coverImage || DEFAULT_COVER,
-    category:        initial?.category || 'Technology',
+    category:        initial?.category || 'News',
     tags:            (initial?.tags?.map(t => t.name) || []) as string[],
     published:       initial?.published ?? false,
     featured:        initial?.featured ?? false,

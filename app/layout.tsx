@@ -4,7 +4,7 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 
 export const metadata: Metadata = {
   title: 'Trend Axis | Modern Blog',
-  description: 'Thoughtful writing on technology, design, business, science and culture.',
+  description: 'Thoughtful writing on African trends, Scholarship & Jobs opportunities, Sport, Entertainement, science & culture, opinions and other topics.',
   openGraph: {
     siteName: 'Trend Axis',
     type: 'website',

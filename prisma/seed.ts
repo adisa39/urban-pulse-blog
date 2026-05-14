@@ -5,32 +5,60 @@ const prisma = new PrismaClient();
 
 async function main() {
   // Admin user
-  const password = await bcrypt.hash('admin123', 12);
+  const password = await bcrypt.hash('trend@Axis26', 12);
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@meridian.blog' },
+    where: { email: 'haycoder24@gmail.com' },
     update: {},
     create: {
-      email: 'admin@meridian.blog',
+      email: 'haycoder24@gmail.com',
       password,
-      name: 'Alex Mercer',
+      name: 'Yusuf Adisa',
       bio: 'Senior writer and tech enthusiast with 10+ years of experience.',
       avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
       role: 'ADMIN',
-      twitterHandle: 'alexmercer',
-    },
+      twitterHandle: 'hayonx',
+    },    
   });
 
-  const author2 = await prisma.user.upsert({
-    where: { email: 'sofia@meridian.blog' },
+  const admin2 = await prisma.user.upsert({
+    where: { email: 'admin2@trendaxis.blog' },
     update: {},
     create: {
-      email: 'sofia@meridian.blog',
+      email: 'admin2@trendaxis.blog',
+      password,
+      name: 'Ozioko Danny',
+      bio: 'Senior writer and tech enthusiast with 10+ years of experience.',
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
+      role: 'ADMIN',
+      twitterHandle: 'dannyonx',
+    },    
+  });
+
+  const author1 = await prisma.user.upsert({
+    where: { email: 'author1@trendaxis.blog' },
+    update: {},
+    create: {
+      email: 'author1@trendaxis.blog',
       password,
       name: 'Sofia Chen',
       bio: 'Design thinker and UX researcher passionate about digital experiences.',
       avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
       role: 'AUTHOR',
-      twitterHandle: 'sofiachen',
+      twitterHandle: 'author1x',
+    },
+  });
+
+  const author2 = await prisma.user.upsert({
+    where: { email: 'author2@trendaxis.blog' },
+    update: {},
+    create: {
+      email: 'author2@trendaxis.blog',
+      password,
+      name: 'Sofia Chen',
+      bio: 'Design thinker and UX researcher passionate about digital experiences.',
+      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
+      role: 'AUTHOR',
+      twitterHandle: 'author2x',
     },
   });
 
@@ -87,7 +115,7 @@ async function main() {
       coverImage: 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=1200&h=630&fit=crop',
       category: 'Science',
       tagNames: ['Sleep', 'Health'],
-      authorId: author2.id,
+      authorId: author1.id,
       published: true, featured: false, views: 15200, readTime: 9,
       metaDescription: 'Discover the fascinating science behind sleep and why getting enough rest is critical for your brain and body.',
     },
@@ -99,7 +127,7 @@ async function main() {
       coverImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&h=630&fit=crop',
       category: 'Culture',
       tagNames: ['Digital Art'],
-      authorId: admin.id,
+      authorId: admin2.id,
       published: true, featured: false, views: 4320, readTime: 5,
       metaDescription: 'Exploring how digital ownership is transforming art markets and cultural value.',
     },
@@ -130,11 +158,11 @@ async function main() {
 
   // Default settings
   const settings = [
-    { key: 'siteName', value: 'The Meridian' },
-    { key: 'siteUrl', value: 'https://meridian.blog' },
+    { key: 'siteName', value: 'Trend Axis' },
+    { key: 'siteUrl', value: 'https://trendaxis.blog' },
     { key: 'siteDescription', value: 'Thoughtful writing on technology, design, business, science and culture.' },
     { key: 'postsPerPage', value: '12' },
-    { key: 'twitterHandle', value: '@meridian' },
+    { key: 'twitterHandle', value: '@trendaxis' },
     { key: 'enableComments', value: 'true' },
     { key: 'enableNewsletter', value: 'true' },
   ];
@@ -142,7 +170,7 @@ async function main() {
     await prisma.setting.upsert({ where: { key: s.key }, update: {}, create: s });
   }
 
-  console.log('✅ Seed complete. Admin: admin@meridian.blog / admin123');
+  console.log('✅ Seed complete. Admin: haycoder24@gmail.com / Naf12/557621 | Author:');
 }
 
 main().catch(console.error).finally(() => prisma.$disconnect());
