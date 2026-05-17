@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ApiPost, createPost, updatePost } from '@/lib/hooks';
 import { Save, Eye, X, Plus, AlertCircle, CheckCircle, Loader } from 'lucide-react';
+import { CATEGORIES } from '@/types';
+import { compressImage } from '@/lib/compressImage';
+import { deleteImage, uploadImage } from '@/lib/imageManager';
 
 interface PostEditorProps {
   initial?: Partial<ApiPost>;
@@ -12,7 +15,6 @@ interface PostEditorProps {
   mode: 'create' | 'edit';
 }
 
-const CATEGORIES = ['News', 'Scholarship', 'Sport', 'Entertainment', 'Jobs', 'Politics', 'Others'] as const;
 const DEFAULT_COVER = 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&h=630&fit=crop';
 
 export default function PostEditor({ initial, postId, mode }: PostEditorProps) {
@@ -20,12 +22,17 @@ export default function PostEditor({ initial, postId, mode }: PostEditorProps) {
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
   const [tagInput, setTagInput] = useState('');
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState('');
+  const [uploadedImagePath, setUploadedImagePath] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const [form, setForm] = useState({
     title:           initial?.title || '',
     excerpt:         initial?.excerpt || '',
     content:         initial?.content || '',
     coverImage:      initial?.coverImage || DEFAULT_COVER,
+    coverImagePath:  initial?.coverImagePath  || '',
     category:        initial?.category || 'News',
     tags:            (initial?.tags?.map(t => t.name) || []) as string[],
     published:       initial?.published ?? false,
@@ -47,33 +54,163 @@ export default function PostEditor({ initial, postId, mode }: PostEditorProps) {
   const wordCount = form.content.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length;
   const readTime = Math.max(1, Math.ceil(wordCount / 200));
 
-  const handleSave = async (publishOverride?: boolean) => {
-    if (!form.title.trim()) { setStatus({ type: 'error', msg: 'Title is required.' }); return; }
-    if (!form.content.trim()) { setStatus({ type: 'error', msg: 'Content is required.' }); return; }
+  const handleUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
 
-    setSaving(true);
-    setStatus(null);
+    if (!file) return;
 
-    const payload = {
-      ...form,
-      published: publishOverride !== undefined ? publishOverride : form.published,
-      metaDescription: form.metaDescription || form.excerpt,
-    };
+    const validTypes = [
+      'image/png',
+      'image/jpeg',
+      'image/jpg',
+    ];
+
+    if (!validTypes.includes(file.type)) {
+      setStatus({
+        type: 'error',
+        msg: 'Invalid image format',
+      });
+
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setStatus({
+        type: 'error',
+        msg: 'Image must be less than 10MB',
+      });
+
+      return;
+    }
 
     try {
+      setUploadingImage(true);
+
+      const compressed = await compressImage(file);
+
+      setPhotoPreview(
+        URL.createObjectURL(compressed)
+      );
+
+      // remove previous uploaded image
+      if (uploadedImagePath) {
+        await deleteImage(uploadedImagePath);
+      }
+
+      const uploaded = await uploadImage(
+        compressed
+      );
+
+      setUploadedImageUrl(uploaded.url);
+
+      setUploadedImagePath(uploaded.path);
+
+      update('coverImage', uploaded.url);
+
+      setStatus({
+        type: 'success',
+        msg: 'Image uploaded successfully',
+      });
+    } catch (error) {
+      console.error(error);
+
+      setStatus({
+        type: 'error',
+        msg: 'Image upload failed',
+      });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleSave = async (
+    publishOverride?: boolean
+  ) => {
+    if (!form.title.trim()) {
+      setStatus({
+        type: 'error',
+        msg: 'Title is required.',
+      });
+
+      return;
+    }
+
+    if (!form.content.trim()) {
+      setStatus({
+        type: 'error',
+        msg: 'Content is required.',
+      });
+
+      return;
+    }
+
+    setSaving(true);
+
+    setStatus(null);
+
+    const oldImagePath = form.coverImagePath;
+
+    try {
+      const payload = {
+        ...form,
+        coverImage:
+          uploadedImageUrl || form.coverImage,
+        coverImagePath:
+          uploadedImagePath || form.coverImagePath,
+        published:
+          publishOverride !== undefined
+            ? publishOverride
+            : form.published,
+        metaDescription:
+          form.metaDescription ||
+          form.excerpt,
+      };
+
       if (mode === 'create') {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await createPost(payload as any);
-        setStatus({ type: 'success', msg: 'Post created successfully!' });
-        setTimeout(() => router.push('/admin/posts'), 1200);
+
+        setStatus({
+          type: 'success',
+          msg: 'Post created successfully!',
+        });
+
+        setTimeout(() => {
+          router.push('/admin/posts');
+        }, 1200);
       } else if (postId) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await updatePost(postId, payload as any);
-        setStatus({ type: 'success', msg: 'Post saved.' });
+
+        // delete old image after successful update
+        if (
+          uploadedImagePath &&
+          oldImagePath &&
+          uploadedImagePath !== oldImagePath
+        ) {
+          await deleteImage(oldImagePath);
+        }
+
+        setStatus({
+          type: 'success',
+          msg: 'Post saved.',
+        });
+
         update('published', payload.published);
       }
     } catch (e) {
-      setStatus({ type: 'error', msg: e instanceof Error ? e.message : 'Something went wrong.' });
+      // rollback newly uploaded image
+      if (uploadedImagePath) {
+        await deleteImage(uploadedImagePath);
+      }
+
+      setStatus({
+        type: 'error',
+        msg:
+          e instanceof Error
+            ? e.message
+            : 'Something went wrong.',
+      });
     } finally {
       setSaving(false);
     }
@@ -132,14 +269,40 @@ export default function PostEditor({ initial, postId, mode }: PostEditorProps) {
             <p className="text-xs mt-1" style={{ color: form.excerpt.length > 200 ? '#ef4444' : 'var(--text-muted)' }}>{form.excerpt.length}/200</p>
           </div>
 
-          <div>
-            <label className="form-label">Cover Image URL</label>
-            <input type="url" value={form.coverImage} onChange={e => update('coverImage', e.target.value)} placeholder="https://images.unsplash.com/…" className="form-input" />
-            {form.coverImage && (
-              <div className="mt-2 relative overflow-hidden rounded-xl" style={{ height: 160 }}>
-                <Image src={form.coverImage} alt="Cover preview" fill className="object-cover" unoptimized onError={() => update('coverImage', DEFAULT_COVER)} />
+          <div
+            className="relative w-full h-40 rounded-xl overflow-hidden border"
+            style={{ background: 'var(--bg-secondary)' }}
+          >
+            {/* Preview */}
+            {(photoPreview || form.coverImage) && (
+              <div className="absolute inset-0">
+                <Image
+                  src={photoPreview ?? form.coverImage}
+                  alt="Cover preview"
+                  fill
+                  className="object-cover"
+                  unoptimized
+                  onError={() => update('coverImage', DEFAULT_COVER)}
+                />
               </div>
             )}
+
+            {/* Overlay Upload Button */}
+            <label
+              className="absolute inset-0 z-10 flex items-end justify-end p-3 cursor-pointer bg-black/20 hover:bg-black/30 transition"
+              title="Change photo"
+            >
+              <input
+                type="file"
+                onChange={handleUpload}
+                className="sr-only"
+                accept="image/png,image/jpeg,image/jpg"
+              />
+
+              <span className="px-3 py-1 text-sm text-white bg-black/60 rounded-lg">
+                Upload Cover Image
+              </span>
+            </label>
           </div>
 
           <div>

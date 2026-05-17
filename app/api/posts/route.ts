@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { title, excerpt, content, coverImage, category, tags = [], published, featured, metaDescription } = body;
+    const { title, excerpt, content, coverImage, coverImagePath = '', category, tags = [], published, featured, metaDescription } = body;
 
     if (!title?.trim()) return err('Title is required');
     if (!content?.trim()) return err('Content is required');
@@ -93,6 +93,7 @@ export async function POST(request: NextRequest) {
         excerpt: excerpt?.trim() || '',
         content: content.trim(),
         coverImage: coverImage || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&h=630&fit=crop',
+        coverImagePath: coverImagePath || '',
         category,
         published: published ?? false,
         featured: featured ?? false,

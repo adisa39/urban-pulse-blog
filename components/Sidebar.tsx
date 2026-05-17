@@ -5,6 +5,7 @@ import PostCard from './PostCard';
 import AdSpace from './AdSpace';
 import { TrendingUp, Tag } from 'lucide-react';
 import Link from 'next/link';
+import { CATEGORIES } from '@/types';
 
 interface SidebarProps {
   popularPosts: ApiPost[];
@@ -12,8 +13,6 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ popularPosts, allTags }: SidebarProps) {
-  const categories = ['Technology', 'Design', 'Business', 'Science', 'Culture'];
-
   return (
     <aside className="space-y-8">
       {/* Sidebar rectangle ad */}
@@ -39,7 +38,7 @@ export default function Sidebar({ popularPosts, allTags }: SidebarProps) {
       <div>
         <h3 className="font-serif font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Categories</h3>
         <div className="space-y-1">
-          {categories.map(cat => (
+          {CATEGORIES.map(cat => (
             <Link
               key={cat}
               href={`/category/${cat.toLowerCase()}`}

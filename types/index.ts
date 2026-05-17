@@ -17,3 +17,5 @@ export interface AdminStats {
   featuredPosts: number;
   categories: number;
 }
+
+export const CATEGORIES = ['News', 'Scholarship', 'Sport', 'Entertainment', 'Jobs', 'Politics', 'Others'] as const;

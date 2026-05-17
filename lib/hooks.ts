@@ -9,6 +9,7 @@ export interface ApiPost {
   excerpt: string;
   content: string;
   coverImage: string;
+  coverImagePath?: string;
   category: string;
   tags: { id: string; name: string }[];
   author: {
