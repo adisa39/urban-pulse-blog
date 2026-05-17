@@ -40,6 +40,7 @@ model Post {
   excerpt         String
   content         String   @db.Text
   coverImage      String
+  coverImagePath  String?
   category        String
   tags            Tag[]
   authorId        String

@@ -22,6 +22,13 @@ export default function BlogPostPage() {
   const [related, setRelated] = useState<ApiPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [postUrl, setPostUrl] = useState('');
+  const [widths, setWidths] = useState<number[]>([]);
+
+  useEffect(() => {
+    setWidths(
+      Array.from({ length: 6 }, () => 75 + Math.random() * 25)
+    );
+  }, []);
 
   useEffect(() => {
     setPostUrl(window.location.href);
@@ -58,7 +65,16 @@ export default function BlogPostPage() {
         <div className="animate-pulse space-y-6">
           <div className="h-8 rounded-xl w-2/3" style={{ background: 'var(--bg-secondary)' }} />
           <div className="h-80 rounded-2xl" style={{ background: 'var(--bg-secondary)' }} />
-          {[...Array(6)].map((_, i) => <div key={i} className="h-4 rounded" style={{ background: 'var(--bg-secondary)', width: `${75 + Math.random() * 25}%` }} />)}
+          {widths.map((w, i) => (
+            <div
+              key={i}
+              className="h-4 rounded"
+              style={{
+                background: 'var(--bg-secondary)',
+                width: `${w}%`,
+              }}
+            />
+          ))}
         </div>
       </main>
       <Footer />

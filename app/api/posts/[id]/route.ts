@@ -31,7 +31,7 @@ export async function PUT(request: NextRequest, ctx: Ctx) {
 
   try {
     const body = await request.json();
-    const { title, excerpt, content, coverImage, category, tags, published, featured, metaDescription } = body;
+    const { title, excerpt, content, coverImage, coverImagePath, category, tags, published, featured, metaDescription } = body;
 
     // Handle tag updates
     let tagConnect: { id: string }[] | undefined;
@@ -49,6 +49,7 @@ export async function PUT(request: NextRequest, ctx: Ctx) {
     if (excerpt !== undefined) data.excerpt = excerpt;
     if (content !== undefined) { data.content = content; data.readTime = estimateReadTime(content); }
     if (coverImage !== undefined) data.coverImage = coverImage;
+    if (coverImagePath !== undefined) data.coverImagePath = coverImagePath;
     if (category !== undefined) data.category = category;
     if (published !== undefined) data.published = published;
     if (featured !== undefined) data.featured = featured;
