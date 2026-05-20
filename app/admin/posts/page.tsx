@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { ApiPost, patchPost, deletePost } from '@/lib/hooks';
 import { Search, ExternalLink, Trash2, PenSquare, Eye, EyeOff, Star, StarOff, ChevronUp, ChevronDown, Plus } from 'lucide-react';
 import { format } from 'date-fns';
+import { CATEGORIES } from '@/types';
 
 type SortKey = 'publishedAt' | 'title' | 'views' | 'category';
 
@@ -81,7 +82,7 @@ export default function AdminPostsPage() {
         </div>
         <select value={filterCat} onChange={e => setFilterCat(e.target.value)} className="form-input w-full sm:w-44">
           <option value="all">All Categories</option>
-          {['Technology', 'Design', 'Business', 'Science', 'Culture'].map(c => <option key={c} value={c}>{c}</option>)}
+          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <select value={filterStatus} onChange={e => setFilterStatus(e.target.value as 'all' | 'published' | 'draft')} className="form-input w-full sm:w-36">
           <option value="all">All Status</option>

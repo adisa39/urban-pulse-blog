@@ -12,10 +12,10 @@ export default function AdminSettingsPage() {
 
   const [settings, setSettings] = useState({
     siteName: 'Trend Axis',
-    siteUrl: 'https://meridian.blog',
-    siteDescription: 'Thoughtful writing on technology, design, business, science and culture.',
+    siteUrl: 'https://trendaxis.blog',
+    siteDescription: 'Thoughtful writing on African trends, Scholarship & Jobs opportunities, Sport, Entertainement, science & culture, opinions and other topics.',
     postsPerPage: '12',
-    twitterHandle: '@meridian',
+    twitterHandle: '@trendaxis',
     googleAnalyticsId: '',
     adSensePublisherId: '',
     enableComments: 'true',

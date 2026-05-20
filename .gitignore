@@ -18,6 +18,8 @@ build/
 # prisma
 prisma/*.db
 prisma.config.ts
+prisma/migrations/
+prisma/seed.ts
 
 # misc
 .DS_Store

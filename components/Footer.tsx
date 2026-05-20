@@ -4,8 +4,9 @@ import Link from 'next/link';
 import { Rss, Mail, ArrowRight } from 'lucide-react';
 import { TwitterIcon, LinkedinIcon, GithubIcon } from '@/components/SocialIcons';
 import { useState } from 'react';
+import { CATEGORIES } from '@/types';
+import Image from 'next/image';
 
-const categories = ['Technology', 'Design', 'Business', 'Science', 'Culture'];
 const quickLinks = [
   { label: 'About', href: '/about' },
   { label: 'Write for Us', href: '/write' },
@@ -76,10 +77,28 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center font-serif font-bold text-sm text-white" style={{ background: 'var(--accent)' }}>M</div>
-              <span className="font-serif text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Trend Axis</span>
-            </div>
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2 group">
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
+                style={{ background: 'white' }}
+              >
+                <Image
+                  src="/logo.png"
+                  alt="Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain w-full h-full p-0.5"
+                  priority
+                />
+              </div>
+              <span
+                className="font-serif text-xl font-bold tracking-tight hidden sm:block"
+                style={{ color: 'var(--text-primary)' }}
+              >
+                Trend Axis
+              </span>
+            </Link>
             <p className="text-sm leading-relaxed mb-5" style={{ color: 'var(--text-muted)' }}>
               Thoughtful writing on technology, design, business, science and culture. Independent journalism since 2024.
             </p>
@@ -109,7 +128,7 @@ export default function Footer() {
           <div>
             <h4 className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: 'var(--text-muted)' }}>Topics</h4>
             <ul className="space-y-2">
-              {categories.map(cat => (
+              {CATEGORIES.map(cat => (
                 <li key={cat}>
                   <Link
                     href={`/category/${cat.toLowerCase()}`}
@@ -148,8 +167,8 @@ export default function Footer() {
           {/* Contact */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: 'var(--text-muted)' }}>Contact</h4>
-            <a href="mailto:hello@meridian.blog" className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Mail size={14} /> hello@meridian.blog
+            <a href="mailto:haycoder24@gmail.com" className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+              <Mail size={14} /> info@trendaxis.blog
             </a>
             <div className="mt-4">
               <div className="ad-space h-24 rounded-lg">
@@ -166,7 +185,7 @@ export default function Footer() {
             © {new Date().getFullYear()} Trend Axis. All rights reserved.
           </p>
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-            Built with Next.js & TypeScript
+            Built for trends
           </p>
         </div>
       </div>
