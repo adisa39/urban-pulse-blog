@@ -94,7 +94,8 @@ export default function BlogPostPage() {
     </>
   );
 
-  const avatar = post.author.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face';
+  const avatar = '/logo.png'; // post.author.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'; 
+  const authorName = 'Editor'; // post.author.name;
 
   return (
     <>
@@ -134,9 +135,9 @@ export default function BlogPostPage() {
           {/* Author row */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:justify-between pb-6 mb-8" style={{ borderBottom: '1px solid var(--border)' }}>
             <div className="flex items-center gap-3">
-              <Image src={avatar} alt={post.author.name} width={48} height={48} className="rounded-full object-cover border-2" style={{ borderColor: 'var(--border)' }} />
+              <Image src={avatar} alt={authorName} width={48} height={48} className="rounded-full object-cover border-2" style={{ borderColor: 'var(--border)' }} />
               <div>
-                <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>{post.author.name}</p>
+                <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>{authorName}</p>
                 <div className="flex items-center gap-3 text-sm" style={{ color: 'var(--text-muted)' }}>
                   <span className="flex items-center gap-1"><Calendar size={12} /> {format(new Date(post.publishedAt), 'MMMM d, yyyy')}</span>
                   <span className="text-xs opacity-60">({formatDistanceToNow(new Date(post.publishedAt), { addSuffix: true })})</span>
@@ -180,10 +181,10 @@ export default function BlogPostPage() {
               {/* Author bio */}
               <div className="mt-8 p-6 rounded-2xl" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Image src={avatar} alt={post.author.name} width={72} height={72} className="rounded-full object-cover flex-shrink-0" />
+                  <Image src={avatar} alt={authorName} width={72} height={72} className="rounded-full object-cover flex-shrink-0" />
                   <div>
                     <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>Written by</p>
-                    <h3 className="font-serif font-bold text-xl mb-2" style={{ color: 'var(--text-primary)' }}>{post.author.name}</h3>
+                    <h3 className="font-serif font-bold text-xl mb-2" style={{ color: 'var(--text-primary)' }}>{authorName}</h3>
                     <p className="text-sm leading-relaxed mb-3" style={{ color: 'var(--text-muted)' }}>{post.author.bio || ''}</p>
                     <div className="flex items-center gap-2">
                       {post.author.twitterHandle && (

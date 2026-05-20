@@ -31,7 +31,7 @@ function tagName(t: string | { id: string; name: string }): string {
 
 export default function PostCard({ post, variant = 'default' }: PostCardProps) {
   const timeAgo = formatDistanceToNow(new Date(post.publishedAt), { addSuffix: true });
-  const avatar = post.author.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face';
+  const avatar = '/logo.png'; // post.author.avatar ||
 
   if (variant === 'hero') {
     return (
@@ -47,8 +47,8 @@ export default function PostCard({ post, variant = 'default' }: PostCardProps) {
           <p className="text-white/75 text-sm sm:text-base line-clamp-2 mb-4">{post.excerpt}</p>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <Image src={avatar} alt={post.author.name} width={28} height={28} className="rounded-full object-cover border-2 border-white/40" />
-              <span className="text-white/85 text-sm font-medium">{post.author.name}</span>
+              <Image src={avatar} alt="Editor" width={28} height={28} className="rounded-full object-cover border-2 border-white/40" />
+              <span className="text-white/85 text-sm font-medium">Editor</span>
             </div>
             <span className="text-white/50 text-sm flex items-center gap-1"><Clock size={13} /> {post.readTime} min read</span>
             <span className="text-white/50 text-sm hidden sm:flex items-center gap-1"><Eye size={13} /> {post.views.toLocaleString()}</span>
@@ -72,8 +72,8 @@ export default function PostCard({ post, variant = 'default' }: PostCardProps) {
           <p className="text-sm line-clamp-2 mb-4" style={{ color: 'var(--text-muted)' }}>{post.excerpt}</p>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Image src={avatar} alt={post.author.name} width={24} height={24} className="rounded-full object-cover" />
-              <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>{post.author.name}</span>
+              <Image src={avatar} alt="Editor" width={24} height={24} className="rounded-full object-cover" />
+              <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>Editor</span>
             </div>
             <span className="text-xs flex items-center gap-1" style={{ color: 'var(--text-muted)' }}><Clock size={12} /> {post.readTime}m</span>
           </div>
@@ -116,9 +116,9 @@ export default function PostCard({ post, variant = 'default' }: PostCardProps) {
         </div>
         <div className="flex items-center justify-between pt-3" style={{ borderTop: '1px solid var(--border)' }}>
           <div className="flex items-center gap-2">
-            <Image src={avatar} alt={post.author.name} width={26} height={26} className="rounded-full object-cover" />
+            <Image src={avatar} alt="Editor" width={26} height={26} className="rounded-full object-cover" />
             <div>
-              <p className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{post.author.name}</p>
+              <p className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Editor</p>
               <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{timeAgo}</p>
             </div>
           </div>

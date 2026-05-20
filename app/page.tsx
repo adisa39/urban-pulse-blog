@@ -38,7 +38,7 @@ export default function HomePage() {
     tags: p.tags.map(t => t.name),
     author: {
       ...p.author,
-      avatar: p.author.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
+      avatar: '/logo.png', //  p.author.avatar || 
       bio: p.author.bio || '',
       id: p.author.id,
       social: {
