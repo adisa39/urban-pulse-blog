@@ -9,6 +9,12 @@ export const metadata: Metadata = {
     siteName: 'Trend Axis',
     type: 'website',
   },
+  icons: {
+    icon: [
+      { url: "/favicon.ico" }
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  },
   twitter: {
     card: 'summary_large_image',
   },
